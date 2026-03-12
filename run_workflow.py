@@ -6,7 +6,7 @@ from google.adk.sessions import InMemorySessionService
 from hackathon2026_agent.agent import app
 
 async def run_workflow():
-    print("--- Starting Analysis for mock_traffic_video.mp4 ---")
+    print("--- Starting Analysis for real_videos/clip1.mp4 ---")
     
     import uuid
     session_id = f"test_session_{uuid.uuid4().hex}"
@@ -21,8 +21,15 @@ async def run_workflow():
     
     from google.genai import types
     unique_request_id = uuid.uuid4().hex
-    prompt_text = f"Video filepath: mock_traffic_video.mp4\nRequest ID: {unique_request_id}\nPlease explicitly analyze this specific video. Ignore previous conversations or videos. Focus only on the facts of this new video."
-    content = types.Content(role="user", parts=[types.Part.from_text(text=prompt_text)])
+    prompt_text = f"Request ID: {unique_request_id}\nPlease explicitly analyze this specific video. Ignore previous conversations or videos. Focus only on the facts of this new video."
+    
+    with open("real_videos/clip1.mp4", "rb") as f:
+        video_bytes = f.read()
+
+    content = types.Content(role="user", parts=[
+        types.Part.from_bytes(data=video_bytes, mime_type="video/mp4"),
+        types.Part.from_text(text=prompt_text)
+    ])
     
     events = runner.run_async(
         user_id="test_user",

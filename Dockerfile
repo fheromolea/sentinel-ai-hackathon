@@ -1,5 +1,5 @@
 # Stage 1: Build the React frontend
-FROM node:18 AS frontend-build
+FROM node:22 AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
@@ -14,9 +14,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 WORKDIR /app
 
 # Copy dependency files and install
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 RUN uv venv
-RUN uv sync --locked
+RUN uv sync
 
 # Add virtual environment to PATH
 ENV PATH="/app/.venv/bin:$PATH"
