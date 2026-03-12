@@ -1,0 +1,9 @@
+# Environments
+.env
+.env.local
+
+# Credentials and sensitive files
+credentials.json
+secrets.yml
+*.pem
+*.key

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hackathon2026-agent"
+version = "0.1.0"
+description = "Hackathon 2026 ADK Agent Project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk>=1.20.0",
+    "google-cloud-logging>=3.12.1",
+    "google-cloud-trace>=1.16.2",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "pytest>=8.0.0",
+    "werkzeug>=3.0.0",
+    "google-generativeai>=0.3.0",
+    "google-cloud-discoveryengine>=0.11.0",
+]
+
+[project.scripts]
+hackathon2026_agent="hackathon2026_agent:app"
+
+[tool.setuptools.packages.find]
+include = ["hackathon2026_agent"]
