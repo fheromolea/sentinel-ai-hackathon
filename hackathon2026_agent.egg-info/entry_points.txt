@@ -1,2 +1,0 @@
-[console_scripts]
-hackathon2026_agent = hackathon2026_agent:app
