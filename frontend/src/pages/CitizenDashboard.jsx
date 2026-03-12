@@ -44,12 +44,10 @@ export default function CitizenDashboard() {
   
   const fileInputRef = useRef(null);
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // We pass the filename to the backend (assuming it's in the server dir for the hackathon ADK)
-    // and we create a local object URL to securely preview it in the browser UI
     const videoData = {
       id: 'uploaded',
       title: file.name,
@@ -57,8 +55,46 @@ export default function CitizenDashboard() {
       objectUrl: URL.createObjectURL(file),
       thumb: null
     };
+
+    setSelectedVideo(videoData);
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setSubmitStatus('idle');
     
-    handleSelectVideo(videoData);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const uploadRes = await fetch('/upload_video', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      const uploadData = await uploadRes.json();
+      videoData.url = uploadData.video_url;
+      
+      const res = await fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_url: videoData.url })
+      });
+      
+      const data = await res.json();
+      setAnalysisResult(data);
+    } catch (err) {
+      console.error(err);
+      setAnalysisResult({
+        detected_vehicle: "Network Error",
+        infraction_detected: true,
+        violated_article: "API Error",
+        legal_text: "Could not connect to Backend.",
+        action_description: "Check logs.",
+        penalty: "N/A"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
   
   const handleSelectVideo = async (video) => {

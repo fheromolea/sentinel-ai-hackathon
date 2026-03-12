@@ -16,6 +16,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from hackathon2026_agent.agent import app as adk_app
+from fastapi import UploadFile, File
 
 DB_FILE = "reports.db"
 
@@ -60,10 +61,12 @@ app.add_middleware(
 # Ensure directories exist
 os.makedirs("real_videos", exist_ok=True)
 os.makedirs("ai_videos", exist_ok=True)
+os.makedirs("temp_uploads", exist_ok=True)
 
 # Mount them so frontend can load them via HTTP
 app.mount("/real_videos", StaticFiles(directory="real_videos"), name="real_videos")
 app.mount("/ai_videos", StaticFiles(directory="ai_videos"), name="ai_videos")
+app.mount("/temp_uploads", StaticFiles(directory="temp_uploads"), name="temp_uploads")
 
 
 class AnalyzeRequest(BaseModel):
@@ -191,6 +194,19 @@ async def analyze_video(req: AnalyzeRequest):
     except Exception as e:
         print(f"Error parsing ADK output: {e}\nRaw: {last_output}")
         raise HTTPException(status_code=500, detail="Could not parse ADK response as JSON")
+
+@app.post("/upload_video")
+async def upload_video_endpoint(file: UploadFile = File(...)):
+    import tempfile
+    import shutil
+    import uuid
+    # Save the file to a temp location
+    temp_dir = "temp_uploads" # Use an unmounted directory so user videos don't appear in the grid
+    unique_filename = f"upload_{uuid.uuid4().hex}_{file.filename}"
+    file_path = os.path.join(temp_dir, unique_filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    return {"video_url": file_path}
 
 @app.post("/reports")
 def submit_report(report: ReportSubmission):
